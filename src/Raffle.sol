@@ -31,11 +31,11 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     uint32 private immutable i_callbackGasLimit;
     uint256 private immutable i_memeBounty;
     uint256 private immutable i_winnerBounty;
+    Meme private i_meme;
 
     address payable[] private s_players;
     uint256 private s_lastTimeStamp;
     address payable private s_winner;
-    Meme private s_meme;
     RaffleState private s_raffleState;
 
     event EnteredRaffle(address indexed player);
@@ -53,7 +53,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         uint64 subscriptionId,
         uint32 callbackGasLimit
     ) VRFConsumerBaseV2(vrfCoordinator) {
-        s_meme = Meme(meme);
+        i_meme = Meme(meme);
         i_memeBounty = memeBounty;
         i_winnerBounty = winnerBounty;
         i_entranceFee = entrancefee;
@@ -67,7 +67,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
     }
 
     function addMeme(uint256 amount) external {
-        bool success = s_meme.transferFrom(msg.sender, address(this), amount);
+        bool success = i_meme.transferFrom(msg.sender, address(this), amount);
         if (!success) {
             revert Raffle__TransferFromFailed();
         }
@@ -81,7 +81,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
             revert Raffle__NotOpen();
         }
         s_players.push(payable(msg.sender));
-        s_meme.transfer(msg.sender, i_memeBounty);
+        i_meme.transfer(msg.sender, i_memeBounty);
         emit EnteredRaffle(msg.sender);
     }
 
@@ -95,7 +95,7 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
         s_lastTimeStamp = block.timestamp;
         emit WinnerPicked(s_winner);
         (bool success,) = s_winner.call{value: address(this).balance}("");
-        s_meme.transfer(s_winner, i_winnerBounty);
+        i_meme.transfer(s_winner, i_winnerBounty);
         if (!success) {
             revert Raffle__TransferFailed();
         }
