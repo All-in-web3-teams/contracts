@@ -14,7 +14,7 @@ contract Meme is ERC20, ERC20Burnable, Ownable {
         Ownable(msg.sender)
     {
         s_decimal = decimal;
-        _mint(msg.sender, totalSupply);
+        _mint(tx.origin, totalSupply);
     }
 
     function decimals() public view override returns (uint8) {
